@@ -1,0 +1,20 @@
+Step Functions passes a message that includes a task token to an Amazon Simple Queue Service (Amazon SQS) queue.
+
+Step Functions then pauses, waiting for that token to be returned.
+
+A go function then gets tasks from the sqs queue and  SendTaskSuccess with that same task token.
+
+When the task token is received, the workflow continues.
+
+I want to first create a function called Cr
+
+
+
+I want to create a Activity State Machine that sends a task token an Amazon Simple Queue Service (Amazon SQS) queue & waits for that token to be returned.
+
+1. The State machine will read a json file on the root of the project to get a list of tasks to be created which will have a taskName object array
+
+2. A Run Activity state machine will be created Activity Tasks matching the number of tasks listed in the json file. Tasks will be created using CreateActivity api  and added to the State workflow
+	createActivityResponse, err := svc.CreateActivity(&sfn.CreateActivityInput{
+		Name: &activityName,
+

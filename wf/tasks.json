@@ -1,0 +1,14 @@
+{
+
+  "tasks": [
+    {
+      "taskName": "eks_cluster"
+    },
+    {
+      "taskName": "dynamodb"
+    },
+    {
+      "taskName": "kms"
+    }
+  ]
+}
