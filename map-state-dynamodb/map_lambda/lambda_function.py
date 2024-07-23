@@ -2,28 +2,33 @@ import json
 
 
 def lambda_handler(event, context):
-    # Define a list of items for ECS template
-    ecs_template_items = [
-        {"id": 1, "name": "ecs"},
-        {"id": 2, "name": "sqs"},
-        {"id": 3, "name": "elasticache"},
-    ]
+    correlation_id = event.get('correlation_id',
+                               'default_id')  # Get correlation_id from event, use 'default_id' if not found
 
-    # Define a list of general items
-    items = [
-        {"id": 1, "name": "eks"},
-        {"id": 2, "name": "dynamodb"},
-        {"id": 3, "name": "s3"}
-    ]
+    items = {
+        "component_1": [{"name": "lambdarole", "component_type": "Lambda Role", "component_group": "Group 1",
+                         "correlation_id": correlation_id}],
+        "component_2": [
+            {"name": "DynamoDb", "component_type": "DynamoDb", "component_group": "Group 2", "correlation_id": correlation_id}],
+        "component_3": [
+            {"name": "Lambda", "component_type": "lambda", "component_group": "Group 3", "correlation_id": correlation_id},
+            {"name": "NATGateway", "component_type": "skip", "component_group": "Group 3", "correlation_id": correlation_id},
+            {"name": "PrivateVPCEndpoints", "component_type": "skip", "component_group": "Group 3",
+             "correlation_id": correlation_id},
+            {"name": "LambdaBase", "component_type": "skip", "component_group": "Group 3", "correlation_id": correlation_id}
+        ],
+        "component_4": [
+            {"name": "empty", "component_type": "skip", "component_group": "Group 4", "correlation_id": correlation_id}],
 
-    # Check if the 'template' parameter is provided and equals 'ecs'
-    if 'template' in event and event['template'] == 'ecs':
-        response_items = ecs_template_items
-    else:
-        response_items = items
+        "component_5": [
+            {"name": "NATGateway", "component_type": "skip", "component_group": "Group 5", "correlation_id": correlation_id},
+            {"name": "PrivateVPCEndpoints", "component_type": "skip", "component_group": "Group 5",
+             "correlation_id": correlation_id},
+            {"name": "LambdaBase", "component_type": "skip", "component_group": "Group 5", "correlation_id": correlation_id},
+        ]
+    }
 
-    # Return the appropriate items based on the template parameter
     return {
         'statusCode': 200,
-        'body': {"items": response_items}
+        'body': {"items": items}
     }

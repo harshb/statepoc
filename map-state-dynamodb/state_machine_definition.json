@@ -1,0 +1,197 @@
+{
+  "Comment": "A state machine that invokes a lambda function to generate items and then processes each item with a map state, saving data to DynamoDB, followed by a completion task.",
+  "StartAt": "GetTasks",
+  "States": {
+    "GetTasks": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:042272874750:function:MapGenerator",
+      "Parameters": {
+        "correlation_id.$": "$.correlation_id"
+      },
+      "Next": "Parallel"
+    },
+    "Parallel": {
+      "Type": "Parallel",
+      "Next": "Done",
+      "Branches": [
+        {
+          "StartAt": "Component1",
+          "States": {
+            "Component1": {
+              "Type": "Map",
+              "ItemsPath": "$.body.items.component_1",
+              "MaxConcurrency": 0,
+              "Iterator": {
+                "StartAt": "WaitForCompletion",
+                "States": {
+                  "WaitForCompletion": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+                    "Parameters": {
+                      "FunctionName": "arn:aws:lambda:us-east-1:042272874750:function:SendTokenToDynamoDB",
+                      "Payload": {
+                        "name.$": "$.name",
+                        "component_type.$": "$.component_type",
+                        "component_group.$": "$.component_group",
+                        "task_token.$": "$$.Task.Token",
+                        "correlation_id.$": "$.correlation_id"
+                      }
+                    },
+                    "ResultPath": "$.result",
+                    "End": true
+                  }
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Component2",
+          "States": {
+            "Component2": {
+              "Type": "Map",
+              "ItemsPath": "$.body.items.component_2",
+              "MaxConcurrency": 0,
+              "Iterator": {
+                "StartAt": "WaitForCompletion (1)",
+                "States": {
+                  "WaitForCompletion (1)": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+                    "Parameters": {
+                      "FunctionName": "arn:aws:lambda:us-east-1:042272874750:function:SendTokenToDynamoDB",
+                      "Payload": {
+                        "name.$": "$.name",
+                        "component_type.$": "$.component_type",
+                        "component_group.$": "$.component_group",
+                        "task_token.$": "$$.Task.Token",
+                        "correlation_id.$": "$.correlation_id"
+                      }
+                    },
+                    "ResultPath": "$.result",
+                    "End": true
+                  }
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Component3",
+          "States": {
+            "Component3": {
+              "Type": "Map",
+              "ItemsPath": "$.body.items.component_3",
+              "MaxConcurrency": 0,
+              "Iterator": {
+                "StartAt": "WaitForCompletion (3)",
+                "States": {
+                  "WaitForCompletion (3)": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+                    "Parameters": {
+                      "FunctionName": "arn:aws:lambda:us-east-1:042272874750:function:SendTokenToDynamoDB",
+                      "Payload": {
+                        "name.$": "$.name",
+                        "component_type.$": "$.component_type",
+                        "component_group.$": "$.component_group",
+                        "task_token.$": "$$.Task.Token",
+                        "correlation_id.$": "$.correlation_id"
+                      }
+                    },
+                    "ResultPath": "$.result",
+                    "End": true
+                  }
+                }
+              },
+              "End": true
+            }
+          }
+        }   ,
+        {
+          "StartAt": "Component4",
+          "States": {
+            "Component4": {
+              "Type": "Map",
+              "ItemsPath": "$.body.items.component_4",
+              "MaxConcurrency": 0,
+              "Iterator": {
+                "StartAt": "WaitForCompletion (4)",
+                "States": {
+                  "WaitForCompletion (4)": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+                    "Parameters": {
+                      "FunctionName": "arn:aws:lambda:us-east-1:042272874750:function:SendTokenToDynamoDB",
+                      "Payload": {
+                        "name.$": "$.name",
+                        "component_type.$": "$.component_type",
+                        "component_group.$": "$.component_group",
+                        "task_token.$": "$$.Task.Token",
+                        "correlation_id.$": "$.correlation_id"
+                      }
+                    },
+                    "ResultPath": "$.result",
+                    "End": true
+                  }
+                }
+              },
+              "End": true
+            }
+          }
+        } ,
+        {
+          "StartAt": "Component5",
+          "States": {
+            "Component5": {
+              "Type": "Map",
+              "ItemsPath": "$.body.items.component_5",
+              "MaxConcurrency": 0,
+              "Iterator": {
+                "StartAt": "WaitForCompletion (5)",
+                "States": {
+                  "WaitForCompletion (5)": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+                    "Parameters": {
+                      "FunctionName": "arn:aws:lambda:us-east-1:042272874750:function:SendTokenToDynamoDB",
+                      "Payload": {
+                        "name.$": "$.name",
+                        "component_type.$": "$.component_type",
+                        "component_group.$": "$.component_group",
+                        "task_token.$": "$$.Task.Token",
+                        "correlation_id.$": "$.correlation_id"
+                      }
+                    },
+                    "ResultPath": "$.result",
+                    "End": true
+                  }
+                }
+              },
+              "End": true
+            }
+          }
+        }
+
+
+      ]
+    },
+    "Done": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:042272874750:function:SendTokenToDynamoDB",
+        "Payload": {
+          "name": "done",
+          "component_type": "done",
+          "component_group": "Group 99",
+          "correlation_id.$": "$[0][0].correlation_id",
+          "task_token.$": "$$.Task.Token"
+        }
+      },
+      "End": true
+    }
+  }
+}

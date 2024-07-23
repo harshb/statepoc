@@ -1,0 +1,124 @@
+{
+  "apiVersion": "deployment/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "eacdep",
+    "sealID": "<SEAL_ID>",
+    "model": {
+      "name": "eacsetup",
+      "version": "v1"
+    }
+  },
+  "spec": {
+    "modulepack": {
+      "name": "default",
+      "version": "0.9.2"
+    },
+    "environment": {
+      "awsAccountID": "<REPLACE_AWS_ACCOUNT_ID>",
+      "awsRegion": "<REPLACE_AWS_REGION>",
+      "tfeOrganization": "<REPLACE_TFE_ORG>"
+    },
+    "components": [
+      {
+        "type": "Roles",
+        "name": "lambdarole",
+        "action": "apply",
+        "properties": {
+          "roles": [
+            {
+              "access": [
+                {
+                  "name": "dynamodb",
+                  "permissions": {
+                    "read_access": true,
+                    "write_access": true,
+                    "delete_access": true
+                  },
+                  "type": "DynamoDB"
+                }
+              ],
+              "assumable_service": [
+                "lambda.amazonaws.com"
+              ],
+              "name": "lambdaRole",
+              "byo": false
+            }
+          ]
+        }
+      },
+      {
+        "type": "DynamoDB",
+        "name": "dynamodb",
+        "action": "apply",
+        "properties": {
+          "app_prefix": true,
+          "hash_key": "test_id"
+        }
+      },
+      {
+        "type": "Lambda",
+        "name": "lambda",
+        "action": "apply",
+        "connectsTo": [
+          {
+            "type": "DynamoDB",
+            "name": "dynamodb"
+          },
+          {
+            "type": "Roles",
+            "name": "lambdarole"
+          }
+        ],
+        "dependsOn": [
+          {
+            "type": "NATGateway",
+            "name": "natgw"
+          },
+          {
+            "type": "PrivateVPCEndpoints",
+            "name": "pvce"
+          },
+          {
+            "type": "LambdaBase",
+            "name": "lambdabase"
+          }
+        ],
+        "properties": {
+          "handler": "handler.execute",
+          "runtime": "python3.9",
+          "role": "lambdaRole",
+          "egress_rules": [
+            {
+              "cidr_blocks": [
+                "0.0.0.0/0"
+              ],
+              "description": "Open outbound connections to DynamoDB",
+              "from_port": 443,
+              "to_port": 443,
+              "protocol": "tcp"
+            }
+          ]
+        }
+      },
+      {
+        "type": "NATGateway",
+        "name": "natgw",
+        "action": "skip",
+        "properties": {}
+      },
+      {
+        "type": "PrivateVPCEndpoints",
+        "name": "pvce",
+        "action": "skip",
+        "properties": {}
+      },
+      {
+        "type": "LambdaBase",
+        "name": "lambdabase",
+        "action": "skip",
+        "properties": {}
+      }
+    ]
+  }
+}
